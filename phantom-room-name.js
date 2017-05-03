@@ -11,7 +11,7 @@ var roomNumber; // 房间号
 var room_name; // 房间名
 
 if (args.length === 1) {
-  roomNumber = 85963;
+  roomNumber = 85963; // 默认搜索炮哥直播间
 } else {
   roomNumber = args[1];
 }
