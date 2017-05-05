@@ -2,7 +2,8 @@
  * Created by lenovo on 2017/5/2.
  */
 
-const liveState = require('./liveState');
+// const liveState = require('./liveState');
+const liveState = require('./getLiveState');
 const room_numbers = {
   'paoge': 85963,       // 温州炮哥
   'qishifu': 17732,     // 7师傅
@@ -16,9 +17,8 @@ const room_numbers = {
 (async function () {
   "use strict";
 
-  // for (let k in room_numbers) {
-  //   console.log(k, await liveState(room_numbers[k]));
-  // }
-  console.log(await liveState(room_numbers.paoge));
+  for (let k in room_numbers) {
+    console.log(k, await liveState(room_numbers[k]));
+  }
 
 }());
