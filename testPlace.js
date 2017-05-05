@@ -16,24 +16,9 @@ const room_numbers = {
 (async function () {
   "use strict";
 
-  for (let k in room_numbers) {
-    console.log(k, await liveState(room_numbers[k]));
-  }
+  // for (let k in room_numbers) {
+  //   console.log(k, await liveState(room_numbers[k]));
+  // }
+  console.log(await liveState(room_numbers.paoge));
 
 }());
-
-(async function () {
-
-  console.log(1);
-
-  await new Promise(resolve => {
-    "use strict";
-    setTimeout(() => {
-      console.log(2);
-      resolve();
-    }, 1000);
-  });
-
-  console.log(3);
-
-}())
