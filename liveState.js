@@ -32,7 +32,7 @@ module.exports = getLiveState;
  */
 async function getPageObj() {
   "use strict";
-
+  
   const phantom = await phantom.create();
   const page = await phantom.createPage();
 
@@ -83,31 +83,26 @@ async function getLiveState(roomNumber) {
   // 等待页面加载
   isLive = await new Promise((resolve, reject) => {
 
-    setTimeout(function () {
-      console.log('fuck');
-      resolve();
-    }, 5000);
-    // setTimeout(async function checkNoMoreResource() {
-    //
-    //   if (count === 0) {
-    //     // 执行倒计时
-    //
-    //     let liveStatus = await page.evaluate(function () {
-    //       return !document.querySelector('div.time-box');
-    //     });
-    //
-    //     await phantom.exit();
-    //
-    //     resolve(liveStatus);
-    //
-    //   } else {
-    //     // 再次倒计时查找
-    //
-    //     await new Promise((resolve, reject) => {
-    //       setTimeout(checkNoMoreResource, resourceWait);
-    //     })
-    //   }
-    // }, resourceWait);
+    setTimeout(async function checkNoMoreResource() {
+
+      if (count === 0) {
+        // 执行倒计时
+
+        let liveStatus = await page.evaluate(function () {
+          return !document.querySelector('div.time-box');
+        });
+
+        await phantom.exit();
+
+        resolve(liveStatus);
+
+      } else {
+        // 再次倒计时查找
+
+        setTimeout(checkNoMoreResource, resourceWait);
+
+      }
+    }, resourceWait);
 
     // setTimeout(function checkRequest() {
     //
