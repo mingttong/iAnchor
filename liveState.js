@@ -12,7 +12,9 @@ const baseUrl = 'https://www.douyu.com/';
 const defaultRoomNumber = 85963; // 默认为炮哥直播间
 const resourceWait = 300; // 等待资源继续加载的时间
 const maxWait = 10000; //最大等待时间
+const checkDelay = 20; // 检查是否还有资源在请求的间隔时间。
 
+let checkRequestTimeout; // 检查是否还有资源请求的倒计时
 let count = 0;
 let isLive = false;
 let viewportSize = {
@@ -31,8 +33,8 @@ module.exports = getLiveState;
 async function getPageObj() {
   "use strict";
 
-  const instance = await phantom.create();
-  const page = await instance.createPage();
+  const phantom = await phantom.create();
+  const page = await phantom.createPage();
 
   // 对 page 进行初始化操作
 
@@ -52,7 +54,7 @@ async function getPageObj() {
 
   return {
     page: page,
-    phantom: instance,
+    phantom: phantom,
   };
 }
 
@@ -80,6 +82,11 @@ async function getLiveState(roomNumber) {
 
   // 等待页面加载
   isLive = await new Promise((resolve, reject) => {
+
+    setTimeout(function () {
+      console.log('fuck');
+      resolve();
+    }, 5000);
     // setTimeout(async function checkNoMoreResource() {
     //
     //   if (count === 0) {
@@ -102,19 +109,30 @@ async function getLiveState(roomNumber) {
     //   }
     // }, resourceWait);
 
-    setInterval(async function () {
-
-      if (count === 0) {
-        let liveStatus = await page.evaluate(function () {
-            return !document.querySelector('div.time-box');
-          });
-
-        await phantom.exit();
-
-        resolve(liveStatus);
-      }
-
-    }, resourceWait);
+    // setTimeout(function checkRequest() {
+    //
+    //   if (count === 0) {
+    //
+    //     checkRequestTimeout = setTimeout(async function () {
+    //
+    //       let liveStatus = await page.evaluate(function () {
+    //         return !document.querySelector('div.time-box');
+    //       });
+    //
+    //       await phantom.exit();
+    //
+    //       resolve(liveStatus);
+    //
+    //     }, resourceWait)
+    //
+    //   } else {
+    //
+    //     clearTimeout(checkRequestTimeout); // 清除掉执行检查的倒计时
+    //     setTimeout(checkRequest, checkDelay); // 再创建一个timeout
+    //
+    //   }
+    //
+    // }, checkDelay);
   });
 
   return isLive;
