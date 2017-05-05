@@ -23,10 +23,18 @@ async function getLiveState(roomNumber) {
   const instance = await phantom.create();
   const page = await instance.createPage();
 
-  page.viewportSize = {
+  page.property('viewportSize', {
     width: 1280,
     height: 720
-  };
+  });
+
+  await page.on('onResourceRequested', function (data) {
+    console.log('> ' + data.url);
+  })
+
+  await page.on('onResourceReceived', function (data) {
+    console.log(data.url);
+  })
 
   if (typeof roomNumber === 'string' || typeof roomNumber === 'undefined') {
     // 输入的格式有误
@@ -50,7 +58,7 @@ async function getLiveState(roomNumber) {
         return !document.querySelector('div.time-box');
       });
 
-      await page.render(`./pics/douyu${roomNumber}.png`);
+      // await page.render(`./pics/douyu${roomNumber}.png`);
 
       await instance.exit();
 
