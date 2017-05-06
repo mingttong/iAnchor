@@ -58,8 +58,8 @@ async function getPageObj() {
 /**
  * @name waitFor
  * @description 等待testFx条件满足时返回结果
- * @param testFx {Function} 需满足条件的函数
- * @param maxTimeOut {Number} 最大等待时间，默认为10s
+ * @param testFx     {Function} 需满足条件的函数
+ * @param maxTimeOut {Number}   最大等待时间，默认为10s
  * @returns {Promise} 返回执行结果
  */
 async function waitFor(testFx, maxTimeOut = 10000) {

@@ -13,12 +13,33 @@ const room_numbers = {
   'jianyan': 656971,    // 简言
   'jinyutong': 2094956, // 金玉童童童
 };
+const len = Object.keys(room_numbers).length;
 
+let promises = [];
+
+let start = Date.now();
 (async function () {
   "use strict";
-
   for (let k in room_numbers) {
     console.log(k, await liveState(room_numbers[k]));
   }
-
+  let end = Date.now() - start;
+  console.log('await:', end);
+  console.log(`Average: ${end / len}`);
 }());
+
+
+
+for (let k in room_numbers) {
+  promises.push(liveState(room_numbers[k]));
+}
+
+start = Date.now();
+Promise.all(promises).then(values => {
+  "use strict";
+  console.log(values);
+  let end = Date.now() - start;
+  console.log('Promise.all:', end);
+  console.log(`Average: ${end / len}`);
+});
+
