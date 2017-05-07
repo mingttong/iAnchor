@@ -39,24 +39,23 @@ async function getPageObj() {
 
   page.property('viewportSize', viewportSize);
 
-  await page.on('onResourceRequested', function (data) {
-    // console.log(`> ${data.id} - ${data.url}`);
-  });
-
-  await page.on('onResourceReceived', function (data) {
-    if ((!data.stage || data.stage === 'end') && data.url.indexOf('app-all.js') !== -1) {
-      // console.log(`${data.id} ${data.status} - ${data.url}`);
-      console.log(data.url);
-    }
-  });
-
-  await page.on('onConsoleMessage', function (msg) {
-    // console.log(msg);
-  });
-
-  await page.on('onUrlChanged', function (targetUrl) {
-    console.log('New URL:', targetUrl);
-  });
+  // await page.on('onResourceRequested', function (data) {
+  //   // console.log(`> ${data.id} - ${data.url}`);
+  // });
+  //
+  // await page.on('onResourceReceived', function (data) {
+  //   if ((!data.stage || data.stage === 'end') && data.url.indexOf('app-all.js') !== -1) {
+  //     // console.log(`${data.id} ${data.status} - ${data.url}`);
+  //   }
+  // });
+  //
+  // await page.on('onConsoleMessage', function (msg) {
+  //   // console.log(msg);
+  // });
+  //
+  // await page.on('onUrlChanged', function (targetUrl) {
+  //
+  // });
 
   return {
     page: page,
@@ -78,7 +77,7 @@ async function waitFor(testFx, maxTimeOut = 10000) {
 
   let result = await new Promise((resolve, reject) => {
 
-    let timer = setInterval(async function () {
+    setTimeout(async function timer() {
 
       if ((Date.now() - start < maxTimeOut) && !condition) {
         // 如果还没到 time out 并且还没有到满足执行回调函数的条件。
@@ -90,6 +89,8 @@ async function waitFor(testFx, maxTimeOut = 10000) {
          因为不await的话就对得到一个正在pending的Promise
          */
         condition = await testFx();
+
+        setTimeout(timer, delay);
       } else {
 
         if (!condition) {
@@ -99,8 +100,6 @@ async function waitFor(testFx, maxTimeOut = 10000) {
           // 满足了执行 callback 的条件了
           resolve(true);
         }
-
-        clearInterval(timer);
 
       }
 
@@ -136,7 +135,7 @@ async function getLiveState(rn) {
   if (status !== 'success') {
     throw new Error({message: '打开页面失败'});
   }
-  console.log('============' + rn);
+
   let loadStatus = await waitFor(async function () {
 
     let result =  await page.evaluate(function () {
@@ -155,17 +154,11 @@ async function getLiveState(rn) {
 
     });
 
-    console.log('result:', result);
-
     return result;
 
   });
-  console.log('loadStatus:', loadStatus);
 
   if (loadStatus === true) {
-
-    /*************测试用*************/
-    page.render(`pics/${rn}.png`);
 
     isLive = await page.evaluate(function () {
       return !document.querySelector('div.time-box');
