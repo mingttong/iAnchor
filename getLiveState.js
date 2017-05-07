@@ -13,7 +13,7 @@ const phantom = require('phantom');
 
 const baseUrl = 'https://www.douyu.com/';
 const defaultRoomNumber = 85963; // 默认房间号（炮哥的）
-const delay = 200; // 等待房间名加载出来的间隔
+const delay = 20; // 等待房间名加载出来的间隔
 
 let isLive = false; // 是否在直播
 let viewportSize = {
@@ -44,9 +44,18 @@ async function getPageObj() {
   });
 
   await page.on('onResourceReceived', function (data) {
-    if (!data.stage || data.stage === 'end') {
+    if ((!data.stage || data.stage === 'end') && data.url.indexOf('app-all.js') !== -1) {
       // console.log(`${data.id} ${data.status} - ${data.url}`);
+      console.log(data.url);
     }
+  });
+
+  await page.on('onConsoleMessage', function (msg) {
+    // console.log(msg);
+  });
+
+  await page.on('onUrlChanged', function (targetUrl) {
+    console.log('New URL:', targetUrl);
   });
 
   return {
@@ -68,10 +77,19 @@ async function waitFor(testFx, maxTimeOut = 10000) {
   let condition = false; // 是否执行callback
 
   let result = await new Promise((resolve, reject) => {
-    setInterval(function () {
+
+    let timer = setInterval(async function () {
+
       if ((Date.now() - start < maxTimeOut) && !condition) {
         // 如果还没到 time out 并且还没有到满足执行回调函数的条件。
-        condition = testFx();
+
+        /*
+          20170507 13:48
+         为什么这里要加个await?
+         因为我被它害惨了，每次condition都是true
+         因为不await的话就对得到一个正在pending的Promise
+         */
+        condition = await testFx();
       } else {
 
         if (!condition) {
@@ -82,8 +100,12 @@ async function waitFor(testFx, maxTimeOut = 10000) {
           resolve(true);
         }
 
+        clearInterval(timer);
+
       }
-    }, delay); // < repeat check every delay time
+
+    }, delay); // < check every delay time repeatedly
+
   });
 
   return result;
@@ -114,10 +136,10 @@ async function getLiveState(rn) {
   if (status !== 'success') {
     throw new Error({message: '打开页面失败'});
   }
-
+  console.log('============' + rn);
   let loadStatus = await waitFor(async function () {
 
-    return await page.evaluate(function () {
+    let result =  await page.evaluate(function () {
       // 看房间名是否存在？
 
       var rnEl = document.querySelector('h1');
@@ -126,20 +148,29 @@ async function getLiveState(rn) {
         // 如果房间名元素存在
 
         // 查看内容是否加载出来了
-        return !!rnEl.textContent;
+        return !!rnEl.textContent.length;
       }
 
       return false;
 
     });
 
+    console.log('result:', result);
+
+    return result;
+
   });
+  console.log('loadStatus:', loadStatus);
 
   if (loadStatus === true) {
+
+    /*************测试用*************/
+    page.render(`pics/${rn}.png`);
 
     isLive = await page.evaluate(function () {
       return !document.querySelector('div.time-box');
     });
+
     await instance.exit();
 
   } else {

@@ -6,40 +6,39 @@
 const liveState = require('./getLiveState');
 const room_numbers = {
   'paoge': 85963,       // 温州炮哥
-  'qishifu': 17732,     // 7师傅
+  // 'qishifu': 17732,     // 7师傅
   'shisanyi': 69752,    // 十三姨
   'chenyifaer': 67373,  // 陈一发儿
-  'qige': 65251,        // 七哥
+  // 'qige': 65251,        // 七哥
   'jianyan': 656971,    // 简言
-  'jinyutong': 2094956, // 金玉童童童
+  // 'jinyutong': 2094956, // 金玉童童童
 };
 const len = Object.keys(room_numbers).length;
-
 let promises = [];
 
-let start = Date.now();
+let start1 = Date.now();
 (async function () {
   "use strict";
   for (let k in room_numbers) {
     console.log(k, await liveState(room_numbers[k]));
   }
-  let end = Date.now() - start;
+  let end = Date.now() - start1;
   console.log('await:', end);
   console.log(`Average: ${end / len}`);
 }());
 
 
 
-for (let k in room_numbers) {
-  promises.push(liveState(room_numbers[k]));
-}
-
-start = Date.now();
-Promise.all(promises).then(values => {
-  "use strict";
-  console.log(values);
-  let end = Date.now() - start;
-  console.log('Promise.all:', end);
-  console.log(`Average: ${end / len}`);
-});
+// for (let k in room_numbers) {
+//   promises.push(liveState(room_numbers[k]));
+// }
+//
+// let start2 = Date.now();
+// Promise.all(promises).then(values => {
+//   "use strict";
+//   console.log(values);
+//   let end = Date.now() - start2;
+//   console.log('Promise.all:', end);
+//   console.log(`Average: ${end / len}`);
+// });
 
