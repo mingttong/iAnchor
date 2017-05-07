@@ -19,38 +19,44 @@ let promises = [];
 
 let count = 0;
 
-liveState(room_numbers.shisanyi)
-  .then(function (v) {
-    "use strict";
-    console.log(v);
-  })
-  .catch(function (err) {
-    "use strict";
-    console.log('ERROR:', err);
-  });
+(function () {
+  "use strict";
+  liveState(room_numbers.paoge)
+    .then(function (v) {
+      "use strict";
+      console.log(v);
+    })
+    .catch(function (err) {
+      "use strict";
+      console.log('ERROR:', err);
+    });
+}());
 
-// let start1 = Date.now();
-// (async function () {
-//   "use strict";
-//   for (let k in room_numbers) {
-//
-//     // console.log(k, await liveState(room_numbers[k]));
-//     liveState(room_numbers[k])
-//       .then(function (v) {
-//         count ++;
-//
-//         let end = Date.now() - start1;
-//         console.log(v);
-//         console.log('Total:', end);
-//         console.log('Average:', end / count);
-//       }, function (reject) {
-//         console.log('ERROR:', reject);
-//       });
-//   }
-//   // let end = Date.now() - start1;
-//   // console.log('await:', end);
-//   // console.log(`Average: ${end / len}`);
-// }());
+(function () {
+  "use strict";
+  let start1 = Date.now();
+  (function () {
+    "use strict";
+    for (let k in room_numbers) {
+
+      // console.log(k, await liveState(room_numbers[k]));
+      liveState(room_numbers[k])
+        .then(function (v) {
+          count ++;
+
+          let end = Date.now() - start1;
+          console.log(v);
+          console.log('Total:', end);
+          console.log('Average:', end / count);
+        }, function (reject) {
+          console.log('ERROR:', reject);
+        });
+    }
+    // let end = Date.now() - start1;
+    // console.log('await:', end);
+    // console.log(`Average: ${end / len}`);
+  }());
+});
 
 
 

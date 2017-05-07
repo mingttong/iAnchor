@@ -39,21 +39,36 @@ async function getPageObj() {
 
   page.property('viewportSize', viewportSize);
 
+  /*
+   操蛋的一点是，如果第二个参数是true，则是在真的PhantomJS上跑的。
+   也就是说，你只能用ES5及以下的语法，因为PhantomJS不支持ES6的语法。
+   这也说明了这个"phantom"模块其实不是真的PhantomJS，
+   是作者写的一个可以实现PhantomJS功能的模块。
+
+   所以在“运行真的PhantomJS”模式下，回调函数闭包无法调用外部的变量。
+   更牛逼的是，它甚至还会忽略含有外部变量的语句。
+
+   年轻了。
+   */
   await page.on('onResourceRequested', true, function (data, req) {
-    // console.log(`> ${data.id} - ${data.url}`);
-    if (data.url.indexOf(baseUrl) === -1 && data.url.indexOf('.js') === -1) {
-      console.log(true);
+
+    // if (data.url.indexOf('www.douyu.com') === -1 && data.url.indexOf('shark-all.js') === -1 && data.url.indexOf('app-all.js') === -1 && data.url.indexOf('jquery') === -1 && data.url) {
+    if (data.url.indexOf('www.douyu.com') === -1 && data.url.indexOf('.js') === -1) {
       req.abort();
     }
+
   });
-  //
+
   await page.on('onResourceReceived', function (data) {
 
-    if (!data.stage || data.stage === 'end') {
-      // console.log(`${data.id} ${data.status} - ${data.url}`);
-    }
+    // if ((!data.stage || data.stage === 'end') && !!data.contentType) {
+    //   console.log(`${data.id} ${data.status} - ${data.url}`);
+    // }
 
     if (data.stage === 'start') {
+
+      // console.log(`${data.id} ${data.status} - ${data.url}`);
+
       totalSize += data.bodySize;
       clearTimeout(countSizeTimeout);
       countSizeTimeout = setTimeout(() => {
@@ -185,6 +200,8 @@ async function getAnchorInfo(rn) {
 
   });
 
+  console.log(loadStatus);
+
   if (loadStatus === true) {
 
     anchorInfo = await page.evaluate(function () {
@@ -241,7 +258,7 @@ async function getAnchorInfo(rn) {
       lastLive: anchorInfo.lastLive,
     };
 
-    await page.render(`./pics/${rn}.png`);
+    // await page.render(`./pics/${rn}.png`);
     await instance.exit();
 
   } else {
