@@ -13,15 +13,15 @@ const phantom = require('phantom');
 
 const baseUrl = 'https://www.douyu.com/';
 const defaultRoomNumber = 85963; // 默认房间号（炮哥的）
-const delay = 20; // 等待房间名加载出来的间隔
 
-let isLive = false; // 是否在直播
 let viewportSize = {
   width: 1280,
   height: 1024,
 };
+let totalSize = 0; // 获取的总资源大小
+let countSizeTimeout = null; // 计算总资源大小的倒计时
 
-module.exports = getLiveState;
+module.exports = getAnchorInfo;
 
 /**
  * @name getPgeObj
@@ -39,18 +39,33 @@ async function getPageObj() {
 
   page.property('viewportSize', viewportSize);
 
-  // await page.on('onResourceRequested', function (data) {
-  //   // console.log(`> ${data.id} - ${data.url}`);
-  // });
+  await page.on('onResourceRequested', true, function (data, req) {
+    // console.log(`> ${data.id} - ${data.url}`);
+    if (data.url.indexOf(baseUrl) === -1 && data.url.indexOf('.js') === -1) {
+      console.log(true);
+      req.abort();
+    }
+  });
   //
-  // await page.on('onResourceReceived', function (data) {
-  //   if ((!data.stage || data.stage === 'end') && data.url.indexOf('app-all.js') !== -1) {
-  //     // console.log(`${data.id} ${data.status} - ${data.url}`);
-  //   }
-  // });
-  //
+  await page.on('onResourceReceived', function (data) {
+
+    if (!data.stage || data.stage === 'end') {
+      // console.log(`${data.id} ${data.status} - ${data.url}`);
+    }
+
+    if (data.stage === 'start') {
+      totalSize += data.bodySize;
+      clearTimeout(countSizeTimeout);
+      countSizeTimeout = setTimeout(() => {
+        console.log('Total Size:', totalSize / 1000 + 'KB');
+      }, 500);
+    }
+
+    // console.log(`${data.id} ${data.status} - ${data.url}`);
+  });
+
   // await page.on('onConsoleMessage', function (msg) {
-  //   // console.log(msg);
+  //   console.log(msg);
   // });
   //
   // await page.on('onUrlChanged', function (targetUrl) {
@@ -72,6 +87,8 @@ async function getPageObj() {
  */
 async function waitFor(testFx, maxTimeOut = 10000) {
 
+  const delay = 20; // 等待房间名加载出来的间隔
+
   let start = Date.now();
   let condition = false; // 是否执行callback
 
@@ -84,9 +101,9 @@ async function waitFor(testFx, maxTimeOut = 10000) {
 
         /*
           20170507 13:48
-         为什么这里要加个await?
-         因为我被它害惨了，每次condition都是true
-         因为不await的话就对得到一个正在pending的Promise
+         为什么这里要加个 await ?
+         因为我被它害惨了，每次 condition 都是 true
+         因为不 await 的话就会得到一个正在 pending 的 Promise
          */
         condition = await testFx();
 
@@ -111,17 +128,27 @@ async function waitFor(testFx, maxTimeOut = 10000) {
 }
 
 /**
- * @name getLiveState
+ * @name getAnchorInfo
  * @description 获取直播间直播状态
  * @param rn {Number} 房间号，可选参数
- * @returns {Promise.<boolean>}
+ * @returns {Promise.<{code: number, roomName: string, roomNumber: *, isLive: boolean, anchorName: string, lastLive: string}>}
  */
-async function getLiveState(rn) {
+async function getAnchorInfo(rn) {
   "use strict";
 
   const pageObj = await getPageObj();
   const page = pageObj.page;
   const instance = pageObj.instance;
+
+  // 主播信息
+  let anchorInfo = {
+    code: 0,          // 返回状态码，1为成功，0为失败
+    roomName: '',     // 房间名
+    roomNumber: rn,   // 房间号
+    isLive: false,    // 是否在直播
+    anchorName: '',   // 主播名
+    lastLive: '',     // 上次直播时间
+  };
 
   if (typeof rn === 'string' || typeof rn === 'undefined') {
     // 输入的格式有误
@@ -160,16 +187,70 @@ async function getLiveState(rn) {
 
   if (loadStatus === true) {
 
-    isLive = await page.evaluate(function () {
-      return !document.querySelector('div.time-box');
+    anchorInfo = await page.evaluate(function () {
+
+      var roomName,    // 房间名
+          anchorName,  // 主播名
+          isLive,      // 是否在直播
+          lastLive;    // 上次直播时间
+
+      var info = null; // 主播信息
+
+      isLive = !document.querySelector('div.time-box');
+      roomName = document.querySelector('h1').textContent;
+      anchorName = document.querySelector('a.zb-name').textContent;
+
+      lastLive = isLive? '' : document.querySelector('[data-anchor-info="timetit"]').textContent;
+
+      // 删除掉 zb-name 标签下的废物文字
+
+      var fuckString = document.querySelector('a.zb-name .tip').textContent;
+      anchorName = anchorName.replace(fuckString, '');
+
+      console.log(roomName);
+
+      /*
+       如果支持ES6，一下内容就可以简写为：
+       info = {
+         roomName,
+         anchorName,
+         ...
+       }
+       */
+      info = {
+        roomName: roomName,
+        anchorName: anchorName,
+        isLive: isLive,
+        lastLive: lastLive,
+      };
+
+      info = JSON.stringify(info);
+
+      return info;
+
     });
 
+    anchorInfo = JSON.parse(anchorInfo);
+
+    anchorInfo = {
+      code: 1,
+      roomNumber: rn,
+      roomName: anchorInfo.roomName,
+      anchorName: anchorInfo.anchorName,
+      isLive: anchorInfo.isLive,
+      lastLive: anchorInfo.lastLive,
+    };
+
+    await page.render(`./pics/${rn}.png`);
     await instance.exit();
 
   } else {
     // 查询超时
-    isLive = false;
+    anchorInfo = {
+      code: 0, // 返回状态码，1为成功，0为失败
+      roomNumber: rn, // 房间号
+    };
   }
 
-  return isLive;
+  return anchorInfo;
 }
