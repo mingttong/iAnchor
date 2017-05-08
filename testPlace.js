@@ -12,7 +12,7 @@ const room_numbers = {
   'qige': 65251,        // 七哥
   'jianyan': 656971,    // 简言
   'jinyutong': 2094956, // 金玉童童童
-  'huodong': 't/SGPG',  // 活动页
+  // 'huodong': 't/SGPG',  // 活动页
   'huodong2': 8,        // 活动页
 };
 const len = Object.keys(room_numbers).length;
@@ -21,9 +21,10 @@ let promises = [];
 
 let count = 0;
 
+// 单个测试
 (function () {
   "use strict";
-  liveState(room_numbers.paoge)
+  liveState(room_numbers.huodong2)
     .then(function (v) {
       "use strict";
       console.log(v);
@@ -34,6 +35,7 @@ let count = 0;
     });
 }());
 
+// 群体放养式多个Promise测试
 (function () {
   "use strict";
   let start1 = Date.now();
@@ -61,7 +63,7 @@ let count = 0;
 });
 
 
-
+// 放养式Promise.all测试
 // for (let k in room_numbers) {
 //   promises.push(liveState(room_numbers[k]));
 // }
@@ -74,4 +76,5 @@ let count = 0;
 //   console.log('Promise.all:', end);
 //   console.log(`Average: ${end / len}`);
 // });
+
 
