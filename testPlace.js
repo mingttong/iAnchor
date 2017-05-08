@@ -12,6 +12,8 @@ const room_numbers = {
   'qige': 65251,        // 七哥
   'jianyan': 656971,    // 简言
   'jinyutong': 2094956, // 金玉童童童
+  'huodong': 't/SGPG',  // 活动页
+  'huodong2': 8,        // 活动页
 };
 const len = Object.keys(room_numbers).length;
 

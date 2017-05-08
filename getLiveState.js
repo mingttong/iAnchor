@@ -26,66 +26,146 @@ module.exports = getAnchorInfo;
 /**
  * @name getPgeObj
  * @description 初始化 page,instance 对象并返回
+ * @param options
  * @returns {Promise.<{page: (Promise.<Page>|*), instance: (*|Promise)}>} {Object}
  */
-async function getPageObj() {
+async function getPageObj(options) {
   "use strict";
 
   const instance = await phantom.create();
   const page = await instance.createPage();
 
+  let rn = options.roomNumber; // 房间号
+
+  /**
+   * @name isDynamicData
+   * @description 检查页面数据是否动态生成，如果是动态生成的，则HTML中标题没有内容
+   * @param page {Object} page对象
+   * @returns {Promise.<Object>}
+   */
+  async function isDynamicData (page) {
+
+    let isDynamic =  await page.evaluate(function () {
+      var title = document.querySelector('h1');
+
+      if (!!title) {
+
+        return !title.textContent;
+
+      } else {
+        // 如果连标题都，那就是动态生成的
+        // TODO: 如果标题没有，是否可以当做是加载页面错误的一个判断
+        return true;
+      }
+
+    }).catch(function (v) {
+      console.log('Function "isDynamic" ERROR:', v);
+    });
+
+    isDynamicData = () => isDynamic; // 以后都是这个结果了。
+
+    if (isDynamic) {
+
+      console.log('aaaaaaaaaaaaaaaaaaaaaaaaaa');
+
+      // 如果数据是动态生成的网页，则html、js以及json都需要
+
+      /*
+       操蛋的一点是，如果第二个参数是true，则是在真的PhantomJS上跑的。
+       也就是说，你只能用ES5及以下的语法，因为PhantomJS不支持ES6的语法。
+       这也说明了这个"phantom"模块其实不是真的PhantomJS，
+       是作者写的一个可以实现PhantomJS功能的模块。
+
+       所以在“运行真的PhantomJS”模式下，回调函数闭包无法调用外部的变量。
+       更牛逼的是，它甚至还会忽略含有外部变量的语句。
+
+       年轻了。
+       */
+      await page.on('onResourceRequested', true, function (data, req) {
+        if (data.url.indexOf('www.douyu.com') === -1 && data.url.indexOf('.js') === -1) {
+          console.log('挡住你');
+          req.abort();
+        }
+      });
+
+    } else {
+
+      // 如果数据不是动态生成的网页，则只需要html
+
+      await page.on('onResourceRequested', true, function (data, req) {
+        if (data.url.indexOf('www.douyu.com') === -1) {
+          console.log('2挡住你');
+          req.abort();
+        }
+      });
+
+    }
+
+    return isDynamic;
+
+  }
 
   // 对 page 进行初始化操作
 
   page.property('viewportSize', viewportSize);
 
-  /*
-   操蛋的一点是，如果第二个参数是true，则是在真的PhantomJS上跑的。
-   也就是说，你只能用ES5及以下的语法，因为PhantomJS不支持ES6的语法。
-   这也说明了这个"phantom"模块其实不是真的PhantomJS，
-   是作者写的一个可以实现PhantomJS功能的模块。
+  await page.on('onResourceReceived', async function (data) {
 
-   所以在“运行真的PhantomJS”模式下，回调函数闭包无法调用外部的变量。
-   更牛逼的是，它甚至还会忽略含有外部变量的语句。
+    if ((!data.stage || data.stage === 'end') && !!data.contentType) {
 
-   年轻了。
-   */
-  await page.on('onResourceRequested', true, function (data, req) {
+      console.log(`${data.id} - ${data.url}`);
 
-    // if (data.url.indexOf('www.douyu.com') === -1 && data.url.indexOf('shark-all.js') === -1 && data.url.indexOf('app-all.js') === -1 && data.url.indexOf('jquery') === -1 && data.url) {
-    if (data.url.indexOf('www.douyu.com') === -1 && data.url.indexOf('.js') === -1) {
-      req.abort();
+      if (data.contentType.indexOf('text/html') !== -1 && data.status === 200) {
+        // console.log(`${data.id} ${data.contentType} ${data.status} - ${data.url}`);
+
+        /*
+         不用担心phantom提前退出的问题，
+         因为获取html肯定是在page.open结束之前完成的。
+         */
+        console.log(await isDynamicData(page));
+
+      }
     }
-
-  });
-
-  await page.on('onResourceReceived', function (data) {
-
-    // if ((!data.stage || data.stage === 'end') && !!data.contentType) {
-    //   console.log(`${data.id} ${data.status} - ${data.url}`);
-    // }
 
     if (data.stage === 'start') {
 
-      // console.log(`${data.id} ${data.status} - ${data.url}`);
+      // 计算资源总大小
 
       totalSize += data.bodySize;
       clearTimeout(countSizeTimeout);
       countSizeTimeout = setTimeout(() => {
         console.log('Total Size:', totalSize / 1000 + 'KB');
       }, 500);
+
     }
 
-    // console.log(`${data.id} ${data.status} - ${data.url}`);
   });
 
   // await page.on('onConsoleMessage', function (msg) {
   //   console.log(msg);
   // });
+
+  // 房间号传进来才执行
+  // if (!!rn) {
   //
-  // await page.on('onUrlChanged', function (targetUrl) {
+  //   await page.on('onUrlChanged', async function (targetUrl) {
   //
-  // });
+  //     /*
+  //      如果跳转的页面是同一域名下，
+  //      并且不是又跳回自己
+  //      TODO: 如果跳转的是不同域名下的情况该如何处理
+  //      */
+  //     // if (targetUrl.indexOf(domain) !== -1 && targetUrl !== baseUrl + options.roomNumber) {
+  //     //
+  //     //   isSpecialPage = true;
+  //     //
+  //     //   console.log('发现是活动页');
+  //     //
+  //     // }
+  //
+  //   });
+  //
+  // }
 
   return {
     page: page,
@@ -151,9 +231,11 @@ async function waitFor(testFx, maxTimeOut = 10000) {
 async function getAnchorInfo(rn) {
   "use strict";
 
-  const pageObj = await getPageObj();
-  const page = pageObj.page;
+  const pageObj = await getPageObj({
+    roomNumber: rn,
+  });
   const instance = pageObj.instance;
+  const page = pageObj.page;
 
   // 主播信息
   let anchorInfo = {
@@ -173,6 +255,10 @@ async function getAnchorInfo(rn) {
 
   let url = baseUrl + rn;
   const status = await page.open(url);
+  console.log('page.open done');
+  /*
+   page.open在
+   */
 
   if (status !== 'success') {
     throw new Error({message: '打开页面失败'});
@@ -200,8 +286,6 @@ async function getAnchorInfo(rn) {
 
   });
 
-  console.log(loadStatus);
-
   if (loadStatus === true) {
 
     anchorInfo = await page.evaluate(function () {
@@ -217,17 +301,17 @@ async function getAnchorInfo(rn) {
       roomName = document.querySelector('h1').textContent;
       anchorName = document.querySelector('a.zb-name').textContent;
 
-      lastLive = isLive? '' : document.querySelector('[data-anchor-info="timetit"]').textContent;
+      lastLive = isLive ? '' : document.querySelector('[data-anchor-info="timetit"]').textContent;
 
       // 删除掉 zb-name 标签下的废物文字
 
-      var fuckString = document.querySelector('a.zb-name .tip').textContent;
+      var fuckStringEl = document.querySelector('a.zb-name .tip');
+      // 这些废物文字是动态生成的。
+      var fuckString = fuckStringEl ? fuckStringEl.textContent : '';
       anchorName = anchorName.replace(fuckString, '');
 
-      console.log(roomName);
-
       /*
-       如果支持ES6，一下内容就可以简写为：
+       如果支持ES6，以下内容就可以简写为：
        info = {
          roomName,
          anchorName,
@@ -258,7 +342,6 @@ async function getAnchorInfo(rn) {
       lastLive: anchorInfo.lastLive,
     };
 
-    // await page.render(`./pics/${rn}.png`);
     await instance.exit();
 
   } else {
