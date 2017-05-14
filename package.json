@@ -7,6 +7,9 @@
     "es-checker": "^1.4.1"
   },
   "dependencies": {
-    "phantom": "^4.0.2"
+    "@alicloud/mns": "^1.0.0-beta2",
+    "ali-mns": "^2.6.0",
+    "phantom": "^4.0.2",
+    "request": "^2.81.0"
   }
 }

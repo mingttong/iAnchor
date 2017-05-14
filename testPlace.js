@@ -13,7 +13,9 @@ const room_numbers = {
   'jianyan': 656971,    // 简言
   'jinyutong': 2094956, // 金玉童童童
   // 'huodong': 't/SGPG',  // 活动页
-  'huodong2': 8,        // 活动页
+  // 'huodong2': 8,        // 活动页
+  'businiao': 610588,   // 不死鸟3DM
+  'shunvjia': 570284,   // 淑女佳
 };
 const len = Object.keys(room_numbers).length;
 
@@ -33,7 +35,7 @@ let count = 0;
       "use strict";
       console.log('ERROR:', err);
     });
-}());
+});
 
 // 群体放养式多个Promise测试
 (function () {
@@ -60,7 +62,7 @@ let count = 0;
     // console.log('await:', end);
     // console.log(`Average: ${end / len}`);
   }());
-});
+}());
 
 
 // 放养式Promise.all测试
