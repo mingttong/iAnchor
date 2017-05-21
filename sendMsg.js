@@ -36,6 +36,8 @@ async function sendMsg(opts) {
       rec_num = opts.rec_num
   ;
 
+  // 变量最大长度限制为13个字（不管是英文还是中文）
+
   sms_param.an = `\"${sms_param.an}\"`;
   sms_param.rn = sms_param.rn.replace(/[^\-a-zA-Z0-9\u4e00-\u9fa5]/g, ' ');
   sms_param.rn = `\"${sms_param.rn}\"`;

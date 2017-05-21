@@ -49,9 +49,9 @@ sendMsg({
   sms_param: {
     'un': '周吾南',
     'an': '七师傅',
-    'rn': '清晨醒脑！T-ARA根本停不下来！'
+    'rn': '达叔我是在测试最多能发!!少'
   },
-  rec_num: 18515220443
+  rec_num: 15979149311
 })
   .then(function (res) {
     "use strict";
