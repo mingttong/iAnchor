@@ -4,6 +4,8 @@
 
 // const liveState = require('./liveState');
 const liveState = require('./getLiveState');
+const sendMsg = require('./sendMsg');
+
 const room_numbers = {
   'paoge': 85963,       // 温州炮哥
   'qishifu': 17732,     // 7师傅
@@ -17,6 +19,7 @@ const room_numbers = {
   'businiao': 610588,   // 不死鸟3DM
   'shunvjia': 570284,   // 淑女佳
 };
+
 const len = Object.keys(room_numbers).length;
 
 let promises = [];
@@ -37,6 +40,28 @@ let count = 0;
     });
 });
 
+// let rn = '\"清晨醒脑！T-ARA根本停不下来！\"';
+// rn = rn.replace(/[^\-a-zA-Z0-9\u4e00-\u9fa5]/g, ' ');
+// console.log(rn);
+// console.log(Buffer.byteLength(rn));
+//
+sendMsg({
+  sms_param: {
+    'un': '周吾南',
+    'an': '七师傅',
+    'rn': '清晨醒脑！T-ARA根本停不下来！'
+  },
+  rec_num: 18515220443
+})
+  .then(function (res) {
+    "use strict";
+    console.log(res);
+  })
+  .catch(function (err) {
+    "use strict";
+    console.log(err);
+  });
+
 // 群体放养式多个Promise测试
 (function () {
   "use strict";
@@ -50,8 +75,23 @@ let count = 0;
         .then(function (v) {
           count ++;
 
+          if (v.isLive) {
+            sendMsg({
+              sms_param: {
+                'un': '周吾南',
+                'an': `${v.anchorName}`,
+                'rn': `${v.roomName}`
+              },
+              rec_num: '18515220443'
+            }).then(function (res) {
+              console.log(res);
+            }).catch(function (err) {
+              console.log("ERROR:");
+              console.log(err);
+            });
+          }
+
           let end = Date.now() - start1;
-          console.log(v);
           console.log('Total:', end);
           console.log('Average:', end / count);
         }, function (reject) {
@@ -62,7 +102,7 @@ let count = 0;
     // console.log('await:', end);
     // console.log(`Average: ${end / len}`);
   }());
-}());
+});
 
 
 // 放养式Promise.all测试
