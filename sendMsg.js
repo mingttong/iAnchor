@@ -36,13 +36,15 @@ async function sendMsg(opts) {
       rec_num = opts.rec_num
   ;
 
-  // 变量最大长度限制为13个字（不管是英文还是中文）
+  // 变量最大长度限制为13个字（还未加上两边双引号时。不管是英文还是中文）
+
+  // 处理变量过长
+  sms_param.rn = formatString(sms_param.rn);
+  sms_param.an = formatString(sms_param.an);
+  sms_param.un = formatString(sms_param.un);
 
   sms_param.an = `\"${sms_param.an}\"`;
-  sms_param.rn = sms_param.rn.replace(/[^\-a-zA-Z0-9\u4e00-\u9fa5]/g, ' ');
   sms_param.rn = `\"${sms_param.rn}\"`;
-  console.log(sms_param.an, Buffer.byteLength(sms_param.rn));
-  console.log(sms_param.rn);
 
   sms_param = JSON.stringify(sms_param);
 
@@ -74,6 +76,25 @@ async function sendMsg(opts) {
     });
 
   });
+
+}
+
+/**
+ * @name formatString 格式化变量字符串
+ * @description 变量长度不能超过规定长度，超过规定长度的后面内容用省略号表示
+ * @param str            {String} 需要格式化的字符串
+ * @param limitLength    {number} 规定的最大长度
+ * @returns {*}
+ */
+function formatString(str, limitLength = 13) {
+
+  limitLength = typeof limitLength === 'number' ? limitLength : 13;
+
+  if (str.length > limitLength) {
+    str = str.slice(0, limitLength - 1) + "…";
+  }
+
+  return str;
 
 }
 

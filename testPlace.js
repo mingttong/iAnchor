@@ -45,22 +45,22 @@ let count = 0;
 // console.log(rn);
 // console.log(Buffer.byteLength(rn));
 //
-sendMsg({
-  sms_param: {
-    'un': '周吾南',
-    'an': '七师傅',
-    'rn': '达叔我是在测试最多能发!!少'
-  },
-  rec_num: 15979149311
-})
-  .then(function (res) {
-    "use strict";
-    console.log(res);
-  })
-  .catch(function (err) {
-    "use strict";
-    console.log(err);
-  });
+// sendMsg({
+//   sms_param: {
+//     'un': '周吾南',
+//     'an': '七师傅',
+//     'rn': '清晨醒脑！T-ARA根本停不下来！'
+//   },
+//   rec_num: 18612185547
+// })
+//   .then(function (res) {
+//     "use strict";
+//     console.log(res);
+//   })
+//   .catch(function (err) {
+//     "use strict";
+//     console.log(err);
+//   });
 
 // 群体放养式多个Promise测试
 (function () {
@@ -78,11 +78,11 @@ sendMsg({
           if (v.isLive) {
             sendMsg({
               sms_param: {
-                'un': '周吾南',
-                'an': `${v.anchorName}`,
-                'rn': `${v.roomName}`
+                'un': '莫京达',
+                'an': v.anchorName,
+                'rn': v.roomName
               },
-              rec_num: '18515220443'
+              rec_num: '18612185547'
             }).then(function (res) {
               console.log(res);
             }).catch(function (err) {
@@ -102,7 +102,7 @@ sendMsg({
     // console.log('await:', end);
     // console.log(`Average: ${end / len}`);
   }());
-});
+}());
 
 
 // 放养式Promise.all测试
