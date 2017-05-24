@@ -3,6 +3,11 @@
  */
 
 /**
+ * 通过 Phantom.js 来获取主播直播信息及是否开播
+ * 但是因为找到了斗鱼获取房间信息的接口，此方案暂时拿来作为备用方案，以便应对接口变更。
+ */
+
+/**
  * 闲话：
  * 斗鱼的页面的加载机制还不是每个都一样
  * 对于一般的页面（就是最大众的直播间页面），房间名这类的数据都是在后台就直接渲染好的了
@@ -35,7 +40,9 @@ async function getPageObj(options) {
   const instance = await phantom.create();
   const page = await instance.createPage();
 
-  // 对 page 进行初始化操作
+  /*
+    对 page 进行初始化操作
+   */
 
   page.property('viewportSize', viewportSize);
 
@@ -43,6 +50,7 @@ async function getPageObj(options) {
 
   // 默认动态生成
   if (options && typeof options.dynamicPage === 'boolean' && options.dynamicPage === false) {
+  // if (true) {
 
     // 如果数据不是动态生成的网页，则只需要html
 
@@ -78,12 +86,8 @@ async function getPageObj(options) {
   // onResourceReceived
 
   await page.on('onResourceReceived', async function (data) {
-
-    // if ((!data.stage || data.stage === 'end') && !!data.contentType) {
-    //
-    //   console.log(`${data.id} - ${data.url}`);
-    //
-    // }
+    
+    let countSizeDelay = 500;
 
     if (data.stage === 'start') {
 
@@ -93,15 +97,11 @@ async function getPageObj(options) {
       clearTimeout(countSizeTimeout);
       countSizeTimeout = setTimeout(() => {
         console.log('Total Size:', totalSize / 1000 + 'KB');
-      }, 500);
+      }, countSizeDelay);
 
     }
 
   }); // onResourceReceived end
-
-  // await page.on('onConsoleMessage', function (msg) {
-  //   console.log(msg);
-  // });
 
   return {
     page: page,

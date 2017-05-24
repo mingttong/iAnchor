@@ -31,7 +31,7 @@ async function sendMsg(opts) {
       appsecret = opts.appsecret || 'a14d971678c5c1003dcde690de024a13',
       extend = opts.extend || '',
       sms_free_sign_name = opts.sms_free_sign_name || 'i主播',
-      sms_template_code = opts.sms_template_code || 'SMS_67625144',
+      sms_template_code = opts.sms_template_code || 'SMS_67975058',
       sms_param = opts.sms_param,
       rec_num = opts.rec_num
   ;

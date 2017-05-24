@@ -6,7 +6,7 @@
 
 #### Rest API Demo
 ```js
-ApiClient = require('../index.js').ApiClient;
+ApiClient = require('../app.js').ApiClient;
 
 var client = new ApiClient({
                             'appkey':'4272',
@@ -31,7 +31,7 @@ client.execute('taobao.user.get',
 
 ```js
 
-var TmcClient = require('../index.js').TmcClient;
+var TmcClient = require('../app.js').TmcClient;
 
 var tmcClient = new TmcClient('453509','5642f38e5840714d77beb0574447f204','default');
 

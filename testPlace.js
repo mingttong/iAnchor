@@ -3,10 +3,10 @@
  */
 
 // const liveState = require('./liveState');
-const liveState = require('./getLiveState');
+const getAnchorInfo = require('./getAnchorInfo');
 const sendMsg = require('./sendMsg');
 
-const room_numbers = {
+const room_ids = {
   'paoge': 85963,       // 温州炮哥
   'qishifu': 17732,     // 7师傅
   'shisanyi': 69752,    // 十三姨
@@ -20,103 +20,25 @@ const room_numbers = {
   'shunvjia': 570284,   // 淑女佳
 };
 
-const len = Object.keys(room_numbers).length;
-
-let promises = [];
-
 let count = 0;
+let start = Date.now();
+let totalTime = 0;
 
-// 单个测试
-(function () {
-  "use strict";
-  liveState(room_numbers.huodong2)
-    .then(function (v) {
+for (let k in room_ids) {
+  getAnchorInfo({
+    room_id: room_ids[k],
+  })
+    .then(function (info) {
       "use strict";
-      console.log(v);
+      count += 1;
+      totalTime += Date.now() - start;
+      start = Date.now();
+      console.log(info);
+      console.log(totalTime / count);
     })
     .catch(function (err) {
       "use strict";
-      console.log('ERROR:', err);
+      console.log(err);
     });
-});
-
-// let rn = '\"清晨醒脑！T-ARA根本停不下来！\"';
-// rn = rn.replace(/[^\-a-zA-Z0-9\u4e00-\u9fa5]/g, ' ');
-// console.log(rn);
-// console.log(Buffer.byteLength(rn));
-//
-// sendMsg({
-//   sms_param: {
-//     'un': '周吾南',
-//     'an': '七师傅',
-//     'rn': '清晨醒脑！T-ARA根本停不下来！'
-//   },
-//   rec_num: 18612185547
-// })
-//   .then(function (res) {
-//     "use strict";
-//     console.log(res);
-//   })
-//   .catch(function (err) {
-//     "use strict";
-//     console.log(err);
-//   });
-
-// 群体放养式多个Promise测试
-(function () {
-  "use strict";
-  let start1 = Date.now();
-  (function () {
-    "use strict";
-    for (let k in room_numbers) {
-
-      // console.log(k, await liveState(room_numbers[k]));
-      liveState(room_numbers[k])
-        .then(function (v) {
-          count ++;
-
-          if (v.isLive) {
-            sendMsg({
-              sms_param: {
-                'un': '莫京达',
-                'an': v.anchorName,
-                'rn': v.roomName
-              },
-              rec_num: '18612185547'
-            }).then(function (res) {
-              console.log(res);
-            }).catch(function (err) {
-              console.log("ERROR:");
-              console.log(err);
-            });
-          }
-
-          let end = Date.now() - start1;
-          console.log('Total:', end);
-          console.log('Average:', end / count);
-        }, function (reject) {
-          console.log('ERROR:', reject);
-        });
-    }
-    // let end = Date.now() - start1;
-    // console.log('await:', end);
-    // console.log(`Average: ${end / len}`);
-  }());
-}());
-
-
-// 放养式Promise.all测试
-// for (let k in room_numbers) {
-//   promises.push(liveState(room_numbers[k]));
-// }
-//
-// let start2 = Date.now();
-// Promise.all(promises).then(values => {
-//   "use strict";
-//   console.log(values);
-//   let end = Date.now() - start2;
-//   console.log('Promise.all:', end);
-//   console.log(`Average: ${end / len}`);
-// });
-
+}
 
