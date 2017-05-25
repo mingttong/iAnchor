@@ -15,30 +15,45 @@ const room_ids = {
   'jianyan': 656971,    // 简言
   'jinyutong': 2094956, // 金玉童童童
   // 'huodong': 't/SGPG',  // 活动页
-  // 'huodong2': 8,        // 活动页
+  'huodong2': 8,        // 活动页
   'businiao': 610588,   // 不死鸟3DM
   'shunvjia': 570284,   // 淑女佳
+  'jianianhua': 6,  // 斗鱼嘉年华
+  'nvtuan': 231464, // 女团轮播
+  'diyiwuniang': 265688, // 斗鱼第一舞娘
 };
 
 let count = 0;
 let start = Date.now();
 let totalTime = 0;
 
-for (let k in room_ids) {
-  getAnchorInfo({
-    room_id: room_ids[k],
+getAnchorInfo({
+  room_id: room_ids['paoge'],
+})
+  .then(function (info) {
+    "use strict";
+    console.log(info);
   })
-    .then(function (info) {
-      "use strict";
-      count += 1;
-      totalTime += Date.now() - start;
-      start = Date.now();
-      console.log(info);
-      console.log(totalTime / count);
-    })
-    .catch(function (err) {
-      "use strict";
-      console.log(err);
-    });
-}
+  .catch(function (err) {
+    "use strict";
+    console.log(err);
+  });
+
+// for (let k in room_ids) {
+//   getAnchorInfo({
+//     room_id: room_ids[k],
+//   })
+//     .then(function (info) {
+//       "use strict";
+//       count += 1;
+//       totalTime += Date.now() - start;
+//       start = Date.now();
+//       console.log(info);
+//       console.log(totalTime / count);
+//     })
+//     .catch(function (err) {
+//       "use strict";
+//       console.log(err);
+//     });
+// }
 

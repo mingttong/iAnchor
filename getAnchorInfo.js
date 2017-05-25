@@ -39,11 +39,15 @@ async function getAnchorInfo(opts) {
   };
 
   let repos = await rp(options);
+  if (typeof repos === 'string') {
+    repos = JSON.parse(repos);
+  }
   if (Object.keys(repos).length === 0) {
     throw new Error('Get error result, maybe the room_id was wrong!');
   }
-  // 获取到的是一个对象，其$ROOM字段下是JSON
-  // we get an object from the api, and the '$ROOM' key's value is a json.
+  // 获取到的是一个JSON，其$ROOM字段下是JSON，因此我们要转换两次
+  // we get a json from the api, and the '$ROOM' key's value is a json
+  // so we need to parse twice
   let $ROOM = repos.$ROOM;
   $ROOM = JSON.parse($ROOM);
 
