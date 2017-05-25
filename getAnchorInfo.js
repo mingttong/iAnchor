@@ -11,7 +11,7 @@ const rp = require('request-promise');
 const moment = require('moment');
 
 const BASE_URI = 'http://www.douyu.com/ztCache/WebM/room/';
-const DEFAULT_ROOMNUMBER = 85963;
+const DEFAULT_ROOM_ID = 85963;
 
 module.exports = getAnchorInfo;
 
@@ -20,7 +20,7 @@ async function getAnchorInfo(opts) {
 
   let start = Date.now();
 
-  let room_id = opts.room_id;
+  let room_id = opts.room_id || DEFAULT_ROOM_ID;
   // 传入的房间号必须是数字或者可以强制转换为数字
   // room_id must be a number type or a number like
   if ((typeof room_id === 'string' || typeof room_id === 'number') && Number.isNaN(Number(room_id))) {
