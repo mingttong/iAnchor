@@ -39,9 +39,7 @@ async function getAnchorInfo(opts) {
   };
 
   let repos = await rp(options);
-  if (typeof repos === 'string') {
-    repos = JSON.parse(repos);
-  }
+  repos = JSON.parse(repos);
   if (Object.keys(repos).length === 0) {
     throw new Error('Get error result, maybe the room_id was wrong!');
   }
@@ -60,19 +58,28 @@ async function getAnchorInfo(opts) {
     show_time,    // 上次开播时间
   } = $ROOM;
 
+  // format the show_time
   show_time = moment.unix(show_time).format('YYYY-MM-DD HH:mm');
+
   // show_status 为 1 时则开播，为 2 时则未开播，为 0 时则房间已关闭。
   // if show_status is 0, then the room is close forever!
   // if show_status is 1, then is live
   // if show_status is 2, then is not live
   switch (show_status) {
     case 0:
+      // 房间关闭，就永远不让他开播
       show_status = false;
+      // TODO: 处理关闭的直播间（别浪费我们的流量）
+      // 两种方案：1. 自动删除掉   2. 通知管理员，让管理员来操作
+      // 或者在用户绑定时就提醒用户
+      handleCloseRoom(room_id);
       break;
     case 1:
+      // 开播
       show_status = true;
       break;
     case 2:
+      // 未开播
       show_status = false;
       break;
     default:
@@ -91,5 +98,9 @@ async function getAnchorInfo(opts) {
     show_time,
     use_time,
   };
+
+}
+
+function handleCloseRoom() {
 
 }
