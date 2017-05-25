@@ -35,69 +35,84 @@ async function getAnchorInfo(opts) {
   // the parameter used to send a request by request-promise
   let options = {
     uri: uri,
-    json: true, // the return data is json
+    json: false, // don't let the request-promise parse the JSON string
   };
 
-  let repos = await rp(options);
-  repos = JSON.parse(repos);
-  if (Object.keys(repos).length === 0) {
-    throw new Error('Get error result, maybe the room_id was wrong!');
+  try {
+
+    let repos = await rp(options);
+    repos = JSON.parse(repos);
+    if (Object.keys(repos).length === 0) {
+      throw new Error('Get error result, maybe the room_id was wrong!');
+    }
+    // 获取到的是一个JSON，其$ROOM字段下是JSON，因此我们要转换两次
+    // we get a json from the api, and the '$ROOM' key's value is a json
+    // so we need to parse twice
+    let $ROOM = repos.$ROOM;
+    $ROOM = JSON.parse($ROOM);
+
+    // 获取主播信息
+    // get anchor info
+    let {
+      room_name,    // 房间号
+      owner_name,    // 主播名
+      show_status,  // 是否在直播 1 为直播，2为未开播
+      show_time,    // 上次开播时间
+    } = $ROOM;
+
+    // format the show_time
+    show_time = moment.unix(show_time).format('YYYY-MM-DD HH:mm');
+
+    // show_status 为 1 时则开播，为 2 时则未开播，为 0 时则房间已关闭。
+    // if show_status is 0, then the room is close forever!
+    // if show_status is 1, then is live
+    // if show_status is 2, then is not live
+    switch (show_status) {
+      case 0:
+        // 房间关闭，就永远不让他开播
+        show_status = false;
+        // TODO: 处理关闭的直播间（别浪费我们的流量）
+        // 两种方案：1. 自动删除掉   2. 通知管理员，让管理员来操作
+        // 或者在用户绑定时就提醒用户
+        handleCloseRoom(room_id);
+        break;
+      case 1:
+        // 开播
+        show_status = true;
+        break;
+      case 2:
+        // 未开播
+        show_status = false;
+        break;
+      default:
+        console.log('Get unknown show_status:', show_status);
+        show_status = false;
+    }
+
+    // 耗时
+    let use_time = Date.now() - start;
+
+    return {
+      room_id,
+      owner_name,
+      room_name,
+      show_status,
+      show_time,
+      use_time,
+    };
+
+  } catch (err) {
+
+    // TODO: 如何优雅的处理错误
+
+    console.log(err);
+    return {
+      error_response: {
+        msg: err,
+      }
+    }
+
   }
-  // 获取到的是一个JSON，其$ROOM字段下是JSON，因此我们要转换两次
-  // we get a json from the api, and the '$ROOM' key's value is a json
-  // so we need to parse twice
-  let $ROOM = repos.$ROOM;
-  $ROOM = JSON.parse($ROOM);
-
-  // 获取主播信息
-  // get anchor info
-  let {
-    room_name,    // 房间号
-    owner_name,    // 主播名
-    show_status,  // 是否在直播 1 为直播，2为未开播
-    show_time,    // 上次开播时间
-  } = $ROOM;
-
-  // format the show_time
-  show_time = moment.unix(show_time).format('YYYY-MM-DD HH:mm');
-
-  // show_status 为 1 时则开播，为 2 时则未开播，为 0 时则房间已关闭。
-  // if show_status is 0, then the room is close forever!
-  // if show_status is 1, then is live
-  // if show_status is 2, then is not live
-  switch (show_status) {
-    case 0:
-      // 房间关闭，就永远不让他开播
-      show_status = false;
-      // TODO: 处理关闭的直播间（别浪费我们的流量）
-      // 两种方案：1. 自动删除掉   2. 通知管理员，让管理员来操作
-      // 或者在用户绑定时就提醒用户
-      handleCloseRoom(room_id);
-      break;
-    case 1:
-      // 开播
-      show_status = true;
-      break;
-    case 2:
-      // 未开播
-      show_status = false;
-      break;
-    default:
-      console.log('Get unknown show_status:', show_status);
-      show_status = false;
-  }
-
-  // 耗时
-  let use_time = Date.now() - start;
-
-  return {
-    room_id,
-    owner_name,
-    room_name,
-    show_status,
-    show_time,
-    use_time,
-  };
 
 }
 

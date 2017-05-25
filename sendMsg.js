@@ -27,6 +27,8 @@ const ApiClient = require('./sdk/index.js').ApiClient;
  */
 async function sendMsg(opts) {
 
+  // TODO: 电话和参数必须传入
+
   let appkey = opts.appkey || 23843597,
       appsecret = opts.appsecret || 'a14d971678c5c1003dcde690de024a13',
       extend = opts.extend || '',

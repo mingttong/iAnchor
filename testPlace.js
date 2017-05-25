@@ -27,33 +27,45 @@ let count = 0;
 let start = Date.now();
 let totalTime = 0;
 
-getAnchorInfo({
-  room_id: room_ids['paoge'],
-})
-  .then(function (info) {
-    "use strict";
-    console.log(info);
-  })
-  .catch(function (err) {
-    "use strict";
-    console.log(err);
-  });
-
-// for (let k in room_ids) {
-//   getAnchorInfo({
-//     room_id: room_ids[k],
+// getAnchorInfo({
+//   room_id: room_ids['paoge'],
+// })
+//   .then(function (info) {
+//     "use strict";
+//     console.log(info);
 //   })
-//     .then(function (info) {
-//       "use strict";
-//       count += 1;
-//       totalTime += Date.now() - start;
-//       start = Date.now();
-//       console.log(info);
-//       console.log(totalTime / count);
-//     })
-//     .catch(function (err) {
-//       "use strict";
-//       console.log(err);
-//     });
-// }
+//   .catch(function (err) {
+//     "use strict";
+//     console.log(err);
+//   });
+
+for (let k in room_ids) {
+  getAnchorInfo({
+    room_id: room_ids[k],
+  })
+    .then(function (info) {
+      "use strict";
+      count += 1;
+      totalTime += Date.now() - start;
+      start = Date.now();
+      // if (info.show_status === true) {
+      //   sendMsg({
+      //     sms_param: {
+      //       un: '周吾南',
+      //       rn: info.room_name,
+      //       an: info.owner_name,
+      //     },
+      //     rec_num: 18515220443
+      //   }).catch(function (err) {
+      //     console.log(err);
+      //   });
+      // }
+      console.log(info);
+      console.log(totalTime / count);
+    })
+    .catch(function (err) {
+      "use strict";
+      console.log(err);
+    });
+}
 
