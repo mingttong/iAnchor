@@ -2,7 +2,6 @@
  * Created by lenovo on 2017/5/2.
  */
 
-// const liveState = require('./liveState');
 const getAnchorInfo = require('./getAnchorInfo');
 const sendMsg = require('./sendMsg');
 
@@ -28,7 +27,7 @@ let start = Date.now();
 let totalTime = 0;
 
 // getAnchorInfo({
-//   room_id: room_ids['paoge'],
+//   room_id: room_ids['chenyifaer'],
 // })
 //   .then(function (info) {
 //     "use strict";
