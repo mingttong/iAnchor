@@ -41,7 +41,7 @@ async function getPageObj(options) {
   const page = await instance.createPage();
 
   /*
-    对 page 进行初始化操作
+   对 page 进行初始化操作
    */
 
   page.property('viewportSize', viewportSize);
@@ -50,7 +50,7 @@ async function getPageObj(options) {
 
   // 默认动态生成
   if (options && typeof options.dynamicPage === 'boolean' && options.dynamicPage === false) {
-  // if (true) {
+    // if (true) {
 
     // 如果数据不是动态生成的网页，则只需要html
 
@@ -86,7 +86,7 @@ async function getPageObj(options) {
   // onResourceReceived
 
   await page.on('onResourceReceived', async function (data) {
-    
+
     let countSizeDelay = 500;
 
     if (data.stage === 'start') {
@@ -131,7 +131,7 @@ async function waitFor(testFx, maxTimeOut = 10000) {
         // 如果还没到 time out 并且还没有到满足执行回调函数的条件。
 
         /*
-          20170507 13:48
+         20170507 13:48
          为什么这里要加个 await ?
          因为我被它害惨了，每次 condition 都是 true
          因为不 await 的话就会得到一个正在 pending 的 Promise
@@ -185,13 +185,15 @@ async function checkIsDynamicPage(url) {
   // 等待html解析出来
   await waitFor(async function () {
     return await page.evaluate(function () {
+      console.log()
       return !!document.querySelector('h1');
     });
   });
 
-  let isDynamic = await page.evaluate(function () {
+  let isDynamic = !!(await page.evaluate(function () {
+    console.log(!document.querySelector('h1').textContent);
     return !document.querySelector('h1').textContent;
-  });
+  }));
 
   instance.exit();
 
@@ -243,7 +245,7 @@ async function getAnchorInfo(rn) {
 
   let loadStatus = await waitFor(async function () {
 
-    let result =  await page.evaluate(function () {
+    let result = await page.evaluate(function () {
       // 看房间名是否存在？
 
       var rnEl = document.querySelector('h1');
@@ -265,59 +267,65 @@ async function getAnchorInfo(rn) {
 
   if (loadStatus === true) {
 
-    anchorInfo = await page.evaluate(function () {
+    try {
+      anchorInfo = await page.evaluate(function () {
 
-      var roomName,    // 房间名
+        var roomName,    // 房间名
           anchorName,  // 主播名
           isLive,      // 是否在直播
           lastLive;    // 上次直播时间
 
-      var info = null; // 主播信息
+        var info = null; // 主播信息
 
-      isLive = !document.querySelector('div.time-box');
-      roomName = document.querySelector('h1').textContent;
-      anchorName = document.querySelector('a.zb-name').textContent;
+        isLive = !document.querySelector('div.time-box');
+        roomName = document.querySelector('h1').textContent;
+        anchorName = document.querySelector('a.zb-name').textContent;
 
-      lastLive = isLive ? '' : document.querySelector('[data-anchor-info="timetit"]').textContent;
+        lastLive = isLive ? '' : document.querySelector('[data-anchor-info="timetit"]').textContent;
 
-      // 删除掉 zb-name 标签下的废物文字
+        // 删除掉 zb-name 标签下的废物文字
 
-      var fuckStringEl = document.querySelector('a.zb-name .tip');
-      // 这些废物文字是动态生成的。
-      var fuckString = fuckStringEl ? fuckStringEl.textContent : '';
-      anchorName = anchorName.replace(fuckString, '');
+        var fuckStringEl = document.querySelector('a.zb-name .tip');
+        // 这些废物文字是动态生成的。
+        var fuckString = fuckStringEl ? fuckStringEl.textContent : '';
+        anchorName = anchorName.replace(fuckString, '');
 
-      /*
-       如果支持ES6，以下内容就可以简写为：
-       info = {
+        /*
+         如果支持ES6，以下内容就可以简写为：
+         info = {
          roomName,
          anchorName,
          ...
-       }
-       */
-      info = {
-        roomName: roomName,
-        anchorName: anchorName,
-        isLive: isLive,
-        lastLive: lastLive,
+         }
+         */
+        info = {
+          roomName: roomName,
+          anchorName: anchorName,
+          isLive: isLive,
+          lastLive: lastLive,
+        };
+
+        info = JSON.stringify(info);
+
+        return info;
+
+      });
+
+
+      anchorInfo = JSON.parse(anchorInfo);
+
+      anchorInfo = {
+        code: 1,
+        room_id: rn,
+        room_name: anchorInfo.roomName,
+        owner_name: anchorInfo.anchorName,
+        show_status: anchorInfo.isLive,
+        show_time: anchorInfo.lastLive,
       };
 
-      info = JSON.stringify(info);
-
-      return info;
-
-    });
-
-    anchorInfo = JSON.parse(anchorInfo);
-
-    anchorInfo = {
-      code: 1,
-      roomNumber: rn,
-      roomName: anchorInfo.roomName,
-      anchorName: anchorInfo.anchorName,
-      isLive: anchorInfo.isLive,
-      lastLive: anchorInfo.lastLive,
-    };
+    } catch (err) {
+      console.log(err);
+    }
 
     await instance.exit();
 
@@ -325,7 +333,7 @@ async function getAnchorInfo(rn) {
     // 查询超时
     anchorInfo = {
       code: 0, // 返回状态码，1为成功，0为失败
-      roomNumber: rn, // 房间号
+      room_id: rn, // 房间号
     };
   }
 
